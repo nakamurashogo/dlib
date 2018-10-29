@@ -30,7 +30,5 @@ for i in range(68):
     cv2.circle(frame,(shape.part(i).x,shape.part(i).y),3,(0,0,255),2)
     cv2.putText(frame,str(i),(shape.part(i).x,shape.part(i).y),cv2.FONT_HERSHEY_COMPLEX,0.5,(255,0,0),1)
     cv2.imshow("Camera",frame)
-    key = cv2.waitKey(1)
-    if key == 27:
-        break
+cv2.waitKey(0)
 cv2.destroyAllWindows()
