@@ -22,17 +22,14 @@ def main():
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor('./shape_predictor_68_face_landmarks.dat')
     
-    cascade_face = "/Users/nakamurashogo/Downloads/opencv_data/haarcascades/haarcascade_frontalface_alt2.xml"
-    cascade_face = cv2.CascadeClassifier(cascade_face)
+    cascade_face_pass = './haarcascades/haarcascade_frontalface_alt2.xml'
+    cascade_face = cv2.CascadeClassifier(cascade_face_pass)
     
     cap = cv2.VideoCapture(0)
     end_flag, frame = cap.read()
-    time = 0
         
     while end_flag == True:
-        time += 1
-        #print(time)
-        data = 1
+        #反転
         frame = cv2.flip(frame,1)
         img = frame
         
@@ -66,31 +63,33 @@ def main():
         #鼻の根元
         x2 = shape.part(27).x
         y2 = shape.part(27).y
-        #右目
-        x3 = shape.part(1).x
-        y3 = shape.part(1).y
-        #左目
-        x4 = shape.part(15).x
-        y4 = shape.part(15).y
+        #右こめかみ
+        x3 = shape.part(15).x
+        y3 = shape.part(15).y
+        #左こめかみ
+        x4 = shape.part(1).x
+        y4 = shape.part(1).y
         #面積（絶対値）
         sRight = abs(0.5*(x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2)))
         sLeft  = abs(0.5*(x1*(y2-y4)+x2*(y4-y1)+x4*(y1-y2)))
-        
-        if sRight > sLeft:
-            data = 1
-            print('右')
-        elif sLeft > sRight:
-            data = 0
-            print('左')
+        #scoreは約-5.0~5.0
+        score = round((sLeft - sRight)/150,1)
+        if score > 1.5:
+            print('右　left:{1}    right:{0}  score:{2}'.format(sLeft,sRight,score))
+        elif score < -1.5:
+            print('左　left:{1}    right:{0}   score:{2}'.format(sLeft,sRight,score))
         else:
-            print('正面')
+            print('正面　left:{1}   right:{0}   score:{2}'.format(sLeft,sRight,score))
 
+        socket_client.send(str(score).encode('utf-8')) #データをstr型として送信
+        
         # Escキーで終了
         key = cv2.waitKey(10)
         if key == ESC_KEY:
+            socket_client.send(str(0).encode('utf-8'))
             break
 
-        socket_client.send(str(data).encode('utf-8')) #データをstr型として送信
+    
         #次のフレーム読み込み
         end_flag, frame = cap.read()
 
