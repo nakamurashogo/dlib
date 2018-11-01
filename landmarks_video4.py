@@ -33,15 +33,13 @@ def main():
         frame = cv2.flip(frame,1)
         img = frame
         
-        #顔の検出
+        #顔の検出(OpenCV)
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         face_list = cascade_face.detectMultiScale(img_gray, scaleFactor=1.1, minNeighbors=10, minSize=(100, 100))
         #切り取り式　img[y:x]
         if len(face_list) > 0:
             for rect in face_list:
                 img = img[rect[1]-30:rect[1]+rect[3]+80,rect[0]-50:rect[0]+rect[2]+50]
-        else:
-            print("noface")
     
         #顔検出（四角）
         rects = detector(img, 1)
@@ -74,9 +72,9 @@ def main():
         sLeft  = abs(0.5*(x1*(y2-y4)+x2*(y4-y1)+x4*(y1-y2)))
         #scoreは約-5.0~5.0
         score = round((sLeft - sRight)/150,1)
-        if score > 1.5:
+        if score > 2.0:
             print('右　left:{1}    right:{0}  score:{2}'.format(sLeft,sRight,score))
-        elif score < -1.5:
+        elif score < -2.0:
             print('左　left:{1}    right:{0}   score:{2}'.format(sLeft,sRight,score))
         else:
             print('正面　left:{1}   right:{0}   score:{2}'.format(sLeft,sRight,score))
