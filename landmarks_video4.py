@@ -31,15 +31,23 @@ def main():
     while end_flag == True:
         #反転
         frame = cv2.flip(frame,1)
+        #フレームサイズ縮小
+        width, height = frame.shape[:2]
+        size = (height/2, width/2)
+        frame = cv2.resize(frame, size)
         img = frame
         
         #顔の検出(OpenCV)
         img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         face_list = cascade_face.detectMultiScale(img_gray, scaleFactor=1.1, minNeighbors=10, minSize=(100, 100))
+        
         #切り取り式　img[y:x]
         if len(face_list) > 0:
             for rect in face_list:
-                img = img[rect[1]-30:rect[1]+rect[3]+80,rect[0]-50:rect[0]+rect[2]+50]
+                img = img[rect[1]:rect[1]+rect[3]+20,rect[0]-20:rect[0]+rect[2]+20]
+        
+        #area = rect[3] * rect[2]
+        #print('顔の面積は : ', area)
     
         #顔検出（四角）
         rects = detector(img, 1)
@@ -53,7 +61,8 @@ def main():
         #描画
         for i in range(68):
            cv2.circle(img, (shape.part(i).x, shape.part(i).y), 1,color, thickness=1)
-        cv2.imshow("org", frame)
+        cv2.imshow("frame", frame)
+        cv2.imshow("img", img)
 
         #鼻の頂点
         x1 = shape.part(30).x
@@ -71,7 +80,7 @@ def main():
         sRight = abs(0.5*(x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2)))
         sLeft  = abs(0.5*(x1*(y2-y4)+x2*(y4-y1)+x4*(y1-y2)))
         #scoreは約-5.0~5.0
-        score = round((sLeft - sRight)/150,1)
+        score = round((sLeft - sRight),1)
         if score > 2.0:
             print('右　left:{1}    right:{0}  score:{2}'.format(sLeft,sRight,score))
         elif score < -2.0:
@@ -80,7 +89,7 @@ def main():
             print('正面　left:{1}   right:{0}   score:{2}'.format(sLeft,sRight,score))
 
         socket_client.send(str(score).encode('utf-8')) #データをstr型として送信
-        
+                
         # Escキーで終了
         key = cv2.waitKey(10)
         if key == ESC_KEY:
